@@ -1,0 +1,52 @@
+{
+  "name": "mailfornet",
+  "version": "1.0.2",
+  "description": "Disposable email inboxes for automated tests. Create an inbox, sign up with it, and read the verification code back out — from your test code. Zero dependencies, TypeScript types included.",
+  "keywords": [
+    "email",
+    "testing",
+    "disposable-email",
+    "temporary-email",
+    "throwaway-email",
+    "test-email",
+    "email-testing",
+    "mail-testing",
+    "otp",
+    "verification-code",
+    "email-verification",
+    "e2e",
+    "e2e-testing",
+    "integration-testing",
+    "playwright",
+    "cypress",
+    "puppeteer",
+    "jest",
+    "vitest",
+    "qa",
+    "ci",
+    "webhooks",
+    "email-api",
+    "inbox",
+    "mailfornet"
+  ],
+  "homepage": "https://mailfornet.com/api",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodewithAsif396/mailfornet-node.git"
+  },
+  "bugs": { "url": "https://mailfornet.com/contact" },
+  "license": "MIT",
+  "author": "Mubarah Solutions LLC (https://mailfornet.com)",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "files": ["index.js", "index.d.ts", "README.md", "LICENSE"],
+  "engines": { "node": ">=18" },
+  "sideEffects": false
+}
