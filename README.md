@@ -156,9 +156,15 @@ test('password reset emails a working link', async () => {
 ## When the mail isn't a 6-digit code
 
 ```js
-// The whole message, when you need the link rather than a code
-const mail = await mf.waitForMessage(address, { from: 'noreply@yourapp.com' });
-const link = mail.html.match(/https:\/\/[^"']+\/confirm\/[^"']+/)[0];
+// A confirmation, magic-login or reset link: the server finds it, no regex needed
+const link = await mf.waitForLink(address, { subject: 'Confirm' });
+
+// Code and link together, plus who sent it. Mail with neither (a welcome email) is skipped.
+const { code, link: confirmUrl, subject } = await mf.waitForVerification(address);
+
+// Every message also carries what was extracted from it
+const mail = await mf.waitForMessage(address);
+console.log(mail.code, mail.verificationLink, mail.links);
 
 // A code that isn't six digits
 const token = await mf.waitForCode(address, { pattern: /[A-Z0-9]{8}/ });
@@ -240,9 +246,11 @@ One HTTP call is one request. A long-poll that holds open for a minute is still 
 |---|---|
 | `createInbox({ username?, domain?, ttlMinutes?, idempotencyKey? })` | A disposable address. 1–1440 minutes, default 60. |
 | `waitForCode(address, { timeout?, from?, subject?, digits?, pattern? })` | Waits for mail, returns the code. |
+| `waitForVerification(address, { timeout?, from?, subject?, since? })` | Waits for a verification mail, returns `{ code, link, messageId, from, subject }`. |
+| `waitForLink(address, { timeout?, from?, subject?, since? })` | Waits for a confirm/magic/reset link, returns the URL. |
 | `waitForMessage(address, { timeout?, from?, subject?, since? })` | Waits for mail, returns the whole message. |
 | `listMessages(address, { wait?, limit?, since?, from?, subject? })` | What has arrived. |
-| `getMessage(address, id)` | One message, with text, HTML and attachments. |
+| `getMessage(address, id)` | One message, with text, HTML, attachments, and the extracted `code`, `links` and `verificationLink`. |
 | `deleteInbox(address)` | Delete it now rather than waiting for it to expire. |
 | `domains()` | Domains you can create addresses on. |
 | `usage()` | Requests used this month, and what's left. |

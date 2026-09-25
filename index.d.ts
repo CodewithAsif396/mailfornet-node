@@ -18,6 +18,22 @@ export interface Message extends MessageSummary {
   text?: string;
   html?: string;
   attachments?: Array<{ filename?: string; mimeType?: string; size?: number }>;
+  /** The verification code or OTP the server found in the message, if any. */
+  code?: string | null;
+  /** Every http(s) link, with its anchor text. */
+  links?: Array<{ url: string; text: string }>;
+  /** The link that most likely confirms, verifies or signs in. */
+  verificationLink?: string | null;
+}
+
+export interface Verification {
+  address: string;
+  code: string | null;
+  link: string | null;
+  messageId: string;
+  from: string;
+  subject: string;
+  receivedAt: string;
 }
 
 export interface Usage {
@@ -111,6 +127,10 @@ export class Mailfornet {
   waitForMessage(address: string, options?: WaitOptions): Promise<Message>;
   /** Waits for a message and pulls the verification code out of it. */
   waitForCode(address: string, options?: WaitForCodeOptions): Promise<string>;
+  /** Waits for a verification mail; the server extracts the code and confirm link. Skips mail with neither. */
+  waitForVerification(address: string, options?: WaitOptions): Promise<Verification>;
+  /** Waits for a confirmation, magic-login or reset link and returns its URL. */
+  waitForLink(address: string, options?: WaitOptions): Promise<string>;
   domains(): Promise<string[]>;
   usage(): Promise<Usage>;
   webhooks(): Promise<Webhook[]>;

@@ -167,6 +167,46 @@ export class Mailfornet {
     return found[0];
   }
 
+  /**
+   * Waits for a verification mail and returns what the server found in it: `{ code, link, messageId,
+   * from, subject, receivedAt }`. The server does the extraction and skips mail with neither a code nor
+   * a confirm link, so a welcome email arriving first is not mistaken for the one you want.
+   *
+   * @param {string} address
+   * @param {{ timeout?: number, from?: string, subject?: string, since?: number }} [options]
+   */
+  async waitForVerification(address, options = {}) {
+    const { timeout = 60, from, subject, since = Date.now() - 1000 } = options;
+    const deadline = Date.now() + timeout * 1000;
+    for (;;) {
+      const wait = Math.max(0, Math.min(60, Math.ceil((deadline - Date.now()) / 1000)));
+      try {
+        return await this.#request(`/inboxes/${encodeURIComponent(address)}/code`, { query: { wait, from, subject, since } });
+      } catch (err) {
+        // Same slicing as waitForMessage: one request holds for a minute at most
+        if (err.code !== 'code_not_found' || Date.now() >= deadline) {
+          if (err.code === 'code_not_found') err.message = `No verification code or link arrived at ${address} within ${timeout}s`;
+          throw err;
+        }
+      }
+    }
+  }
+
+  /**
+   * Waits for a confirmation, magic-login or reset link and returns its URL.
+   *
+   * @param {string} address
+   * @param {{ timeout?: number, from?: string, subject?: string, since?: number }} [options]
+   * @returns {Promise<string>}
+   */
+  async waitForLink(address, options = {}) {
+    const found = await this.waitForVerification(address, options);
+    if (!found.link) {
+      throw new MailfornetError(`The mail from ${found.from} carried a code but no confirmation link`, { code: 'link_not_found' });
+    }
+    return found.link;
+  }
+
   /** Domains you can create addresses on. */
   async domains() {
     const { domains } = await this.#request('/domains');
